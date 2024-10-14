@@ -1,8 +1,31 @@
 on: push
 
 jobs:
+  # Build job
+  build:
+    # Specify runner + build steps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Install Node.js dependencies
+        run: "[[ -f package-lock.json ]] && npm ci || true"
+      - name: Build with SvelteKit
+        run: |
+          npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build
+
   # Deploy job
   deploy:
+    # Add a dependency to the build job
+    needs: build
+
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write      # to deploy to Pages
