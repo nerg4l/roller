@@ -20,6 +20,10 @@
     })()
 </script>
 
+<svelte:head>
+    <title>Dice roller</title>
+</svelte:head>
+
 <div>
     {#await loader}
         <p>...waiting</p>
