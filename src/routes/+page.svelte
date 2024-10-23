@@ -14,7 +14,6 @@
             )
         ];
         for (let font in fonts) {
-            //console.log(fonts[font]);
             await loadFont(fonts[font]);
         }
     })()
