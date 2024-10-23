@@ -25,7 +25,7 @@
 
 <div>
     {#await loader}
-        <p>...waiting</p>
+        <div>Loading...</div>
     {:then number}
         <Canvas>
             <Scene/>
