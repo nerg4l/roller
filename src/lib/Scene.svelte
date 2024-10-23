@@ -33,10 +33,10 @@
         ctx.textBaseline = 'middle'
         for (let i = 0; i < sides; i++) {
             let text = numbers[i]
-            if (numbers[i] === '6' || numbers[i] === '9') {
-                text += '.'
-            }
             ctx.fillText(text, step * 0.5 + step * i, step * 0.5)
+            if (numbers[i] === '6' || numbers[i] === '9') {
+                ctx.fillText('_', step * 0.5 + step * i, step * 0.6)
+            }
         }
 
         let texture = new THREE.CanvasTexture(c)
