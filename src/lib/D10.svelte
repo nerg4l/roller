@@ -18,7 +18,7 @@
 
     let rotation = sideRotation(0, sides.length)
 
-    let rotationStart: number[]= [0, 0, 0]
+    let rotationStart: number[] = [0, 0, 0]
     let rotationEnd: number[] = [0, 0, 0]
 
     const calcRadDiff = (rotationStart: number, rotationEnd: number, timer: number) => {
@@ -63,9 +63,9 @@
             timer = 2
         }
         rotation = [
-            calcRadDiff(rotationStart[0], rotationEnd[0], timer/2),
-            calcRadDiff(rotationStart[1], rotationEnd[1], timer/2),
-            calcRadDiff(rotationStart[2], rotationEnd[2], timer/2),
+            calcRadDiff(rotationStart[0], rotationEnd[0], timer / 2),
+            calcRadDiff(rotationStart[1], rotationEnd[1], timer / 2),
+            calcRadDiff(rotationStart[2], rotationEnd[2], timer / 2),
         ]
         if (timer == 2) {
             resolveFaceTask.stop()
@@ -80,8 +80,37 @@
         randomizeFaceTask.start()
         timer = 0
     }
-</script>
 
+    const turn = Math.PI * 2 / sides.length
+    const vertexes = [
+        [0, 1, 0],
+        [Math.sin(turn), edgeOffset, Math.cos(turn)],
+        [0, -edgeOffset, Math.cos(0)],
+        [Math.sin(-turn), edgeOffset, Math.cos(-turn)],
+    ]
+
+    const path = new THREE.CurvePath<THREE.Vector3>();
+    vertexes.forEach((_, i) => {
+        const prev = (i - 1 + vertexes.length) % vertexes.length;
+        const next = (i + 1) % vertexes.length;
+        path.curves.push(new THREE.LineCurve3(
+            new THREE.Vector3(
+                (vertexes[i][0] + vertexes[prev][0]) / 2,
+                (vertexes[i][1] + vertexes[prev][1]) / 2,
+                (vertexes[i][2] + vertexes[prev][2]) / 2,
+            ),
+            new THREE.Vector3(...vertexes[i]),
+        ))
+        path.curves.push(new THREE.LineCurve3(
+            new THREE.Vector3(...vertexes[i]),
+            new THREE.Vector3(
+                (vertexes[i][0] + vertexes[next][0]) / 2,
+                (vertexes[i][1] + vertexes[next][1]) / 2,
+                (vertexes[i][2] + vertexes[next][2]) / 2,
+            ),
+        ))
+    })
+</script>
 
 <T.Mesh
         on:click={roll}
@@ -91,14 +120,12 @@
 >
     {#each sides as _, i}
         <T.Mesh rotation={sideRotation(i, sides.length)} castShadow>
+            <T.TubeGeometry args={[path, 500, 0.02, 20, true]} />
+            <T.MeshStandardMaterial color={0x00ff00} metalness={0.75} roughness={0.35} />
+        </T.Mesh>
+        <T.Mesh rotation={sideRotation(i, sides.length)} castShadow>
             <T.BufferGeometry on:create={({ref}) => {
-                const turn = Math.PI * 2 / sides.length
-                ref.setAttribute('position', new THREE.Float32BufferAttribute([
-                    0, 1, 0,
-                    Math.sin(turn), edgeOffset, Math.cos(turn),
-                    0, -edgeOffset, Math.cos(0),
-                    Math.sin(-turn), edgeOffset, Math.cos(-turn),
-                ], 3))
+                ref.setAttribute('position', new THREE.Float32BufferAttribute(vertexes.flat(), 3))
                 ref.setIndex([
                     0, 2, 1,
                     0, 3, 2,
