@@ -42,7 +42,7 @@
         if (timer >= 1) {
             randomizeFaceTask.stop()
             resolveFaceTask.start()
-            timer = 0
+            timer = 1
             rotationStart = rotation
             const targetIndex = Math.floor(Math.random() * sides.length)
             rotationEnd = sideRotation(targetIndex, sides.length)
@@ -63,9 +63,9 @@
             timer = 2
         }
         rotation = [
-            calcRadDiff(rotationStart[0], rotationEnd[0], timer / 2),
-            calcRadDiff(rotationStart[1], rotationEnd[1], timer / 2),
-            calcRadDiff(rotationStart[2], rotationEnd[2], timer / 2),
+            calcRadDiff(rotationStart[0], rotationEnd[0], timer - 1),
+            calcRadDiff(rotationStart[1], rotationEnd[1], timer - 1),
+            calcRadDiff(rotationStart[2], rotationEnd[2], timer - 1),
         ]
         if (timer == 2) {
             resolveFaceTask.stop()
@@ -110,6 +110,13 @@
             ),
         ))
     })
+
+    const offsetRadius = 0.08
+
+    const standardMaterial = {
+        metalness: 0.75,
+        roughness: 0.35,
+    }
 </script>
 
 <T.Mesh
@@ -120,12 +127,18 @@
 >
     {#each sides as _, i}
         <T.Mesh rotation={sideRotation(i, sides.length)} castShadow>
-            <T.TubeGeometry args={[path, 500, 0.02, 20, true]} />
-            <T.MeshStandardMaterial color={0x00ff00} metalness={0.75} roughness={0.35} />
+            <T.TubeGeometry args={[path, 500, offsetRadius, 20, true]}/>
+            <T.MeshStandardMaterial color={0xcc00cc} {...standardMaterial}/>
         </T.Mesh>
         <T.Mesh rotation={sideRotation(i, sides.length)} castShadow>
             <T.BufferGeometry on:create={({ref}) => {
-                ref.setAttribute('position', new THREE.Float32BufferAttribute(vertexes.flat(), 3))
+                ref.setAttribute('position', new THREE.Float32BufferAttribute(vertexes.map((v, i) => {
+                    return [
+                        v[0],
+                        v[1] + Math.sin(Math.PI/4)*offsetRadius,
+                        v[2] + Math.cos(Math.PI/4)*offsetRadius,
+                    ]
+                }).flat(), 3))
                 ref.setIndex([
                     0, 2, 1,
                     0, 3, 2,
@@ -138,7 +151,7 @@
                     (0 + i) / sides.length, edgeOffset * 2 * textScale,
                 ], 2))
             }}></T.BufferGeometry>
-            <T.MeshStandardMaterial metalness={0.75} roughness={0.35} map={texture}/>
+            <T.MeshStandardMaterial  {...standardMaterial} map={texture}/>
         </T.Mesh>
     {/each}
 </T.Mesh>
